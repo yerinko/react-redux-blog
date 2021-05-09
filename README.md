@@ -1,70 +1,122 @@
-# Getting Started with Create React App
+# React Redux 프로세스 정리 
+![redux](./src/images/redux.png)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 프로젝트 구조
 
-## Available Scripts
+- **components**: 화면에 실제로 그려지는 컴포넌트를 담는 폴더
+- **containers**: 리덕스 스토어와 컴포넌트를 이어주는 매개체를 담는 폴더
+- **modules**: 리덕스의 State, Reducer를 정의한 파일들을 담는 폴더
 
-In the project directory, you can run:
+## Redux 프로세스 
 
-### `npm start`
+1. **modules** 폴더에 값, 그리고 액션 정의하기
+2. **modules/index.js**에서 `combineReducers`를 사용해서 `rootReducer`만들어주기
+3. **containers** 폴더에서 Container 만들고 `connect`함수 사용해서 컴포넌트와 리덕스 연동하기
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### modules 수정
+`modules` 를 수정하는 프로세스는 다음과 같다.
+1. Action Type 정의하기
+2. Action Type 반환하는 함수 만들어주기
+3. 초기 상태 작성하기
+4. `Reducer` 함수 만들기
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Action Type 정의하기
+`modules/counter.js`
+``` 
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+const INPUT_CHANGE = "counter/INPUT_CHANGE";
+const CHANGE_NAME = "counter/CHANGE_NAME";
+``` 
 
-### `npm test`
+### Action Type 반환하는 함수 만들어주기
+간단하게 작성하기 위해서 `createAction` 메소드를 사용했다.
+``` 
+export const increase = createAction(INCREASE);
+export const decrease = createAction(DECREASE);
+export const inputChange = createAction(INPUT_CHANGE, input => input);
+export const changeName = createAction(CHANGE_NAME, name => name);
+``` 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 초기 상태 작성하기
+``` 
+const initialState = {
+  number: 0,
+  name: "평범한 카운터",
+  inputName: ""
+};
+``` 
 
-### `npm run build`
+### Reducer 함수 만들기
+``` 
+const counter = handleActions(
+  {
+    [INCREASE]: (state, action) => ({
+      ...state,
+      number: state.number + 1
+    }),
+    [DECREASE]: (state, action) => ({
+      ...state,
+      number: state.number - 1
+    }),
+    [INPUT_CHANGE]: (state, { payload: input }) => ({
+      ...state,
+      inputName: input
+    }),
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    [CHANGE_NAME]: (state, { payload: name }) => ({
+      ...state,
+      name: name
+    })
+  },
+  initialState
+);
+``` 
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Container 
+``` 
+import {
+  increase,
+  decrease,
+  inputChange,
+  changeName
+} from "../modules/counter";
+(...)
+  const { counterNum, name, inputName } = useSelector(({ counter }) => ({
+    counterNum: counter.number,
+    name: counter.name,
+    inputName: counter.inputName
+  }));
+  const dispatch = useDispatch();
+  const onIncrease = useCallback(() => dispatch(increase()), [dispatch]);
+  const onDecrease = useCallback(() => dispatch(decrease()), [dispatch]);
+  const onInputChange = useCallback(input => dispatch(inputChange(input)), [
+    dispatch
+  ]);
+  const onChangeName = useCallback(name => dispatch(changeName(name)), [
+    dispatch
+  ]);
+  return (
+    <Counter
+      name={name}
+      inputName={inputName}
+      number={counterNum}
+      onIncrease={onIncrease}
+      onDecrease={onDecrease}
+      onChange={onInputChange}
+      onChangeName={onChangeName}
+    />
+  );
+};
+export default React.memo(CounterContainer);
+``` 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### onClick
+`components/Counter.js`
+``` 
+(...)
+const onClick = () => {
+  onChangeName(inputName);
+  onChange("");
+};
+``` 
