@@ -1,5 +1,5 @@
 # React Redux 프로세스 정리 
-![redux](./src/images/redux.png)
+![redux](https://user-images.githubusercontent.com/46296865/117567346-e7a92f00-b0f6-11eb-9971-66e3ee37c60e.png)
 
 ## 프로젝트 구조
 
